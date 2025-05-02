@@ -20,7 +20,7 @@ const Header: React.FC = () => {
         
         <h1 className="text-xl md:text-2xl font-bold text-pokemon-red dark:text-pokemon-red flex items-center">
           <img src="/pokeball.svg" alt="Pokeball" className="w-8 h-8 mr-2" />
-          포켓몬 워들
+          포켓들 Pokedle
         </h1>
         
         <button

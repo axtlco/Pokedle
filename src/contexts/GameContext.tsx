@@ -152,7 +152,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     
     let newGameStatus = gameStatus;
+
+    if (currentGuess.join('') === targetJamo.join('')) {
+      newGameStatus = 'won';
+    } else if (newGuesses.length >= MAX_ATTEMPTS) {
+      newGameStatus = 'lost';
+    }
     
+    /** 
     // Convert current guess Jamo array into Hangul characters
     const guessedChars: string[] = [];
     for (let i = 0; i < currentGuess.length; i += 2) {
@@ -168,7 +175,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } else if (newGuesses.length >= MAX_ATTEMPTS) {
       newGameStatus = 'lost';
     }
-    
+    */ 
+
     setGameState({
       ...gameState,
       guesses: newGuesses,

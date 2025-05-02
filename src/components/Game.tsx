@@ -3,6 +3,7 @@ import GameBoard from './GameBoard';
 import Keyboard from './Keyboard';
 import ResultMessage from './ResultMessage';
 import { useGame } from '../contexts/GameContext';
+import { alpha_2_kr } from '../utils/alpha_2_kr';
 
 const Game: React.FC = () => {
   const { 
@@ -13,21 +14,22 @@ const Game: React.FC = () => {
   } = useGame();
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter') {
-        submitGuess();
-      } else if (e.key === 'Backspace') {
-        handleKeyInput('Backspace');
-      } else if (/^[ㄱ-ㅎㅏ-ㅣ]$/.test(e.key)) {
-        handleKeyInput(e.key);
+    const listener = (e: KeyboardEvent) => {
+      if (e.code === 'Enter') submitGuess()
+      else if (e.code === 'Backspace') handleKeyInput('Backspace')
+      else {
+        const upperKey = e.key.toUpperCase()
+        const key = alpha_2_kr[upperKey] || e.key
+  
+        if (key.length === 1 && /^[ㄱ-ㅎㅏ-ㅣ]$/.test(key)) {
+          handleKeyInput(key)
+        }
       }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [handleKeyInput, submitGuess]);
+    }
+  
+    window.addEventListener('keyup', listener)
+    return () => window.removeEventListener('keyup', listener)
+  }, [handleKeyInput, submitGuess])
 
   return (
     <div className="flex flex-col items-center space-y-6">
