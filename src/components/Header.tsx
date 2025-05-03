@@ -18,7 +18,7 @@ const Header: React.FC = () => {
           <HelpCircle size={24} />
         </button>
         
-        <h1 className="text-xl md:text-2xl font-bold text-pokemon-red dark:text-pokemon-red flex items-center">
+        <h1 className="text-xl md:text-2xl font-bold text-black dark:text-gray-100 flex items-center">
           <img src="/pokeball.svg" alt="Pokeball" className="w-8 h-8 mr-2" />
           포켓들 Pokedle
         </h1>

@@ -37,7 +37,7 @@ const ResultMessage: React.FC = () => {
         {isWinner ? '축하합니다!' : '아쉽네요!'}
       </h2>
       
-      <p className="mb-4">
+      <p className="mb-4 text-gray-800 dark:text-gray-100">
         {isWinner 
           ? `${guesses.length}번의 시도로 맞추셨습니다!` 
           : `정답은 "${targetPokemon}" 입니다.`
@@ -47,7 +47,7 @@ const ResultMessage: React.FC = () => {
       <div className="flex justify-center">
         <button
           onClick={handleShare}
-          className="flex items-center px-4 py-2 bg-pokemon-blue text-white rounded-md font-medium hover:bg-opacity-90 transition-colors"
+          className="flex items-center px-4 py-2 bg-pokemon-blue text-gray-800 dark:text-gray-100 rounded-md font-medium hover:bg-opacity-90 transition-colors"
         >
           <Share2 size={18} className="mr-2" />
           결과 공유하기

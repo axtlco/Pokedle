@@ -39,7 +39,7 @@ const Keyboard: React.FC = () => {
   return (
     <div className="w-full max-w-md px-1 py-2">
       {koreanKeyboard.map((row, i) => (
-        <div key={`row-${i}`} className="flex justify-center mb-2">
+        <div key={`row-${i}`} className="flex justify-center mb-2 text-gray-900 dark:text-white">
           {row.map((key) => {
             const isWide = key === '⌫' || key === 'Enter';
             
