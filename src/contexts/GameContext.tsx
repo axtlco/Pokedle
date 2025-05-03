@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getPokemonOfTheDay } from '../utils/pokemon';
+import { getPokemonOfTheDay, DISASSEMBLED_POKEMON_SET } from '../utils/pokemon';
 import { formatDate } from '../utils/date';
 import { decomposeHangul, composeHangul } from '../utils/korean';
 
@@ -108,6 +108,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const submitGuess = useCallback(() => {
     if (isGameOver || currentGuess.length !== targetJamoLength) return;
+
+    const disassembledInput = currentGuess.join('');
+    if (!DISASSEMBLED_POKEMON_SET.has(disassembledInput)) {
+      alert('등록되지 않은 포켓몬입니다!');
+      return;
+    }
 
     const evaluateGuess = (guess: string[], target: string[]): CellStatus[] => {
       const result: CellStatus[] = Array(guess.length).fill('absent');

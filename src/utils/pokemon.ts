@@ -1,4 +1,5 @@
 import { format, differenceInDays } from 'date-fns';
+import { decomposeHangul } from './korean';
 
 // Sample list of Korean Pokemon names
 // In a real app, this would be a much larger list
@@ -17,7 +18,7 @@ export const getPokemonOfTheDay = (): string => {
   const pokemonIndex = dayDiff % POKEMON_LIST.length;
   return POKEMON_LIST[pokemonIndex];
 };
-
+/** 
 // Get all possible pokemon (for validation)
 export const getAllPokemon = (): string[] => {
   return POKEMON_LIST;
@@ -26,4 +27,15 @@ export const getAllPokemon = (): string[] => {
 // Check if a word is a valid pokemon
 export const isValidPokemon = (word: string): boolean => {
   return POKEMON_LIST.includes(word);
+};
+*/ 
+
+const disassembledPokemonList: string[] = POKEMON_LIST.map(name => 
+  decomposeHangul(name).join('')
+); 
+
+export const DISASSEMBLED_POKEMON_SET = new Set(disassembledPokemonList); 
+
+export const isValidDisassembledPokemon = (input: string): boolean => {
+  return DISASSEMBLED_POKEMON_SET.has(input);
 };
