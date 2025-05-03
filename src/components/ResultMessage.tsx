@@ -33,7 +33,7 @@ const ResultMessage: React.FC = () => {
   
   return (
     <div className="w-full max-w-sm p-4 mb-4 rounded-lg bg-white dark:bg-gray-800 shadow-md text-center">
-      <h2 className={`text-2xl font-bold mb-2 ${isWinner ? 'text-correct' : 'text-pokemon-red'}`}>
+      <h2 className={`text-2xl font-bold mb-2 ${isWinner ? 'text-correct' : 'text-gray-800 dark:text-gray-100'}`}>
         {isWinner ? '축하합니다!' : '아쉽네요!'}
       </h2>
       
