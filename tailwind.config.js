@@ -11,6 +11,7 @@ export default {
         'correct': '#6AAA64',
         'present': '#C9B458',
         'absent': '#787C7E',
+        'absent-dark': '#2d2d2e', 
         'key-bg': '#D3D6DA',
         'key-bg-dark': '#818384',
       },

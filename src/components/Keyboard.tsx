@@ -21,7 +21,7 @@ const Keyboard: React.FC = () => {
     switch (status) {
       case 'correct': return 'bg-correct text-white';
       case 'present': return 'bg-present text-white';
-      case 'absent': return 'bg-absent text-white';
+      case 'absent': return 'bg-absent dark:bg-absent-dark text-white';
       default: return 'bg-key-bg dark:bg-key-bg-dark text-gray-800 dark:text-gray-200';
     }
   };
