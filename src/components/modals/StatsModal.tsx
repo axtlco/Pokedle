@@ -73,7 +73,7 @@ const StatsModal: React.FC<StatsModalProps> = ({ onClose }) => {
 
   return (
     <Modal title="통계" onClose={onClose}>
-      <div className="space-y-6">
+      <div className="space-y-6 text-black dark:text-white">
         <div className="grid grid-cols-4 gap-2 text-center">
           <div className="flex flex-col">
             <span className="text-2xl font-bold">{stats.gamesPlayed}</span>

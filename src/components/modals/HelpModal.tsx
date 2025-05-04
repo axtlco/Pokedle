@@ -8,7 +8,7 @@ interface HelpModalProps {
 const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
   return (
     <Modal title="게임 방법" onClose={onClose}>
-      <div className="space-y-4">
+      <div className="space-y-4 text-black dark:text-white">
         <p>
           포켓몬 워들은 숨겨진 포켓몬의 한글 이름을 맞추는 게임입니다.
         </p>

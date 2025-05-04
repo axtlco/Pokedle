@@ -27,7 +27,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
             </button>
           </div>
-          <p>포켓몬 워들 &copy; {new Date().getFullYear()}</p>
+          <p>Axolotl Pokedle &copy; {new Date().getFullYear()}</p>
         </footer>
       </div>
     </div>

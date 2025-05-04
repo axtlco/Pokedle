@@ -75,6 +75,7 @@ interface CellProps {
 }
 
 const Cell: React.FC<CellProps> = ({ value, status, idx, isRevealed }) => {
+  /*
   const getBgColor = () => {
     if (!isRevealed) return 'bg-white dark:bg-gray-800';
     switch (status) {
@@ -84,6 +85,22 @@ const Cell: React.FC<CellProps> = ({ value, status, idx, isRevealed }) => {
       default: return 'bg-white dark:bg-gray-800';
     }
   };
+  */ 
+  const getBgColor = () => {
+    if (!isRevealed) {
+      if (status === 'filled') {
+        return 'bg-white dark:bg-gray-800 text-gray-800 dark:text-white';
+      }
+      return 'bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200';
+    }
+  
+    switch (status) {
+      case 'correct': return 'bg-correct text-white';
+      case 'present': return 'bg-present text-white';
+      case 'absent': return 'bg-absent text-white';
+      default: return 'bg-white dark:bg-gray-800';
+    }
+  };  
 
   const getDelayStyle = () => {
     return { transitionDelay: `${idx * 150}ms` };

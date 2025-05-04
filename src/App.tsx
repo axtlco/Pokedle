@@ -1,17 +1,18 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { GameProvider } from './contexts/GameContext';
-import Layout from './components/Layout';
-import Game from './components/Game';
+import GamePage from './pages/GamePage';
+import PracticePage from './pages/PracticePage';
 
 function App() {
   return (
     <ThemeProvider>
-      <GameProvider>
-        <Layout>
-          <Game />
-        </Layout>
-      </GameProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<GamePage />} />
+          <Route path="/practice" element={<PracticePage />} />
+        </Routes>
+      </Router>
     </ThemeProvider>
   );
 }

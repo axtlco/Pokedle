@@ -1,9 +1,9 @@
 import React from 'react';
 import { useGame } from '../contexts/GameContext';
-import { Share2 } from 'lucide-react';
+import { Share2, RotateCcw } from 'lucide-react';
 
 const ResultMessage: React.FC = () => {
-  const { gameStatus, targetPokemon, guesses } = useGame();
+  const { gameStatus, targetPokemon, guesses, mode, resetGame } = useGame();
   
   const isWinner = gameStatus === 'won';
   
@@ -31,9 +31,14 @@ const ResultMessage: React.FC = () => {
       });
   };
   
+  const handlePracticeReset = () => {
+    localStorage.removeItem('randomPokemon');
+    resetGame(); 
+  }
+
   return (
     <div className="w-full max-w-sm p-4 mb-4 rounded-lg bg-white dark:bg-gray-800 shadow-md text-center">
-      <h2 className={`text-2xl font-bold mb-2 ${isWinner ? 'text-correct' : 'text-gray-800 dark:text-gray-100'}`}>
+      <h2 className={`text-2xl font-bold mb-2 ${isWinner ? 'text-correct' : 'text-red-500'}`}>
         {isWinner ? '축하합니다!' : '아쉽네요!'}
       </h2>
       
@@ -44,14 +49,24 @@ const ResultMessage: React.FC = () => {
         }
       </p>
       
-      <div className="flex justify-center">
+      <div className="flex justify-center gap-x-3">
         <button
           onClick={handleShare}
-          className="flex items-center px-4 py-2 bg-pokemon-blue text-gray-800 dark:text-gray-100 rounded-md font-medium hover:bg-opacity-90 transition-colors"
+          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors"
         >
           <Share2 size={18} className="mr-2" />
           결과 공유하기
         </button>
+
+        {mode === 'practice' && (
+          <button
+            onClick={handlePracticeReset}
+            className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-md font-medium hover:bg-blue-700 transition-colors"
+          >
+            <RotateCcw size={18} className="mr-2" />
+            다시 하기
+          </button>
+        )}
       </div>
     </div>
   );

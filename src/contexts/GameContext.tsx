@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getPokemonOfTheDay, DISASSEMBLED_POKEMON_SET } from '../utils/pokemon';
+import { getPokemonOfTheDay, getRandomPokemon, DISASSEMBLED_POKEMON_SET } from '../utils/pokemon';
 import { formatDate } from '../utils/date';
-import { decomposeHangul, composeHangul } from '../utils/korean';
+import { decomposeHangul} from '../utils/korean';
 
 export type CellStatus = 'empty' | 'filled' | 'correct' | 'present' | 'absent';
 
@@ -33,14 +33,18 @@ interface GameContextType {
   submitGuess: () => void;
   resetGame: () => void;
   isGameOver: boolean;
+  mode : 'daily' | 'practice'; 
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 const MAX_ATTEMPTS = 6;
 
-const createInitialState = (): GameState => {
-  const targetPokemon = getPokemonOfTheDay();
+const createInitialState = (mode: 'daily' | 'practice' = 'daily'): GameState => {
+  const targetPokemon = 
+    mode === 'practice'
+      ? getRandomPokemon()
+      : getPokemonOfTheDay();
   const targetJamo = targetPokemon.split('').flatMap(char => decomposeHangul(char));
   
   return {
@@ -55,10 +59,14 @@ const createInitialState = (): GameState => {
   };
 };
 
-export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' | 'practice' }> = ({ children, mode = 'daily' }) => {
+  const STORAGE_KEY = mode === 'practice' ? 'practiceGameState' : 'gameState';
   const [gameState, setGameState] = useState<GameState>(() => {
+    if(mode === 'practice') {
+      return createInitialState('practice'); 
+    }
     try {
-      const savedState = localStorage.getItem('gameState');
+      const savedState = localStorage.getItem(STORAGE_KEY);
       if (savedState) {
         const parsedState = JSON.parse(savedState);
         if (parsedState && 
@@ -68,7 +76,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return parsedState;
         }
       }
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Error loading saved game state:', error);
     }
     
@@ -81,8 +90,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isGameOver = gameStatus === 'won' || gameStatus === 'lost';
 
   useEffect(() => {
-    localStorage.setItem('gameState', JSON.stringify(gameState));
-  }, [gameState]);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+  }, [gameState, STORAGE_KEY]);
 
   const handleKeyInput = useCallback((key: string) => {
     if (isGameOver) return;
@@ -193,8 +202,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [currentGuess, gameState, guesses, isGameOver, letterStatuses, targetJamo, targetJamoLength, targetPokemon]);
 
   const resetGame = useCallback(() => {
-    setGameState(createInitialState());
-  }, []);
+    if (mode === 'practice') {
+      localStorage.removeItem('randomPokemon');
+    }
+    setGameState(createInitialState(mode));
+  }, [mode]);
 
   return (
     <GameContext.Provider value={{
@@ -208,7 +220,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
       handleKeyInput,
       submitGuess,
       resetGame,
-      isGameOver
+      isGameOver,
+      mode
     }}>
       {children}
     </GameContext.Provider>
