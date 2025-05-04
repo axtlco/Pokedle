@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getPokemonOfTheDay, getRandomPokemon, DISASSEMBLED_POKEMON_SET } from '../utils/pokemon';
+import { getPokemonOfTheDay, getRandomPokemon, DISASSEMBLED_POKEMON_SET, getPokemonByIndex, getRandomPokemonIndex } from '../utils/pokemon';
 import { formatDate } from '../utils/date';
 import { decomposeHangul} from '../utils/korean';
+import { decodeTarget } from '../utils/encodings'
 
 export type CellStatus = 'empty' | 'filled' | 'correct' | 'present' | 'absent';
 
@@ -41,10 +42,21 @@ const GameContext = createContext<GameContextType | undefined>(undefined);
 const MAX_ATTEMPTS = 6;
 
 const createInitialState = (mode: 'daily' | 'practice' = 'daily'): GameState => {
+  let targetPokemon: string; 
+  if (mode === 'practice') {
+    const queryTarget = new URLSearchParams(window.location.search).get('target');
+    targetPokemon = queryTarget ? decodeTarget(queryTarget) : getRandomPokemon();
+  } else {
+    targetPokemon = getPokemonOfTheDay();
+  }
+
+  /*
   const targetPokemon = 
     mode === 'practice'
       ? getRandomPokemon()
       : getPokemonOfTheDay();
+  */ 
+
   const targetJamo = targetPokemon.split('').flatMap(char => decomposeHangul(char));
   
   return {

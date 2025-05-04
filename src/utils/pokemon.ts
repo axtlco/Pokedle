@@ -33,6 +33,14 @@ export const getRandomPokemon = (): string => {
   return pokemon;
 };
 
+export const getRandomPokemonIndex = (): number => {
+  return Math.floor(Math.random() * POKEMON_LIST.length);
+};
+
+export const getPokemonByIndex = (index: number): string => {
+  return POKEMON_LIST[index];
+};
+
 /** 
 // Get all possible pokemon for validation
 export const getAllPokemon = (): string[] => {
