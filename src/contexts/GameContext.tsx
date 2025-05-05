@@ -108,6 +108,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     }
   });
 
+  /*
   const [gameState, setGameState] = useState<GameState>(() => {
     if(mode === 'practice') {
       return createInitialState('practice'); 
@@ -129,6 +130,29 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     }
     
     return createInitialState();
+  });
+  */
+ 
+  const [gameState, setGameState] = useState<GameState>(() => {
+    const savedState = localStorage.getItem(STORAGE_KEY);
+  
+    if (savedState) {
+      try {
+        const parsedState = JSON.parse(savedState);
+        if (
+          parsedState &&
+          parsedState.targetPokemon &&
+          parsedState.targetJamo
+        ) {
+          return parsedState;
+        }
+      } catch (err) {
+        console.error('🔴 Error parsing game state:', err);
+      }
+    }
+  
+    // 저장된 게 없을 때만 초기화
+    return createInitialState(mode, selectedGens);
   });
 
   const validDisassembledSetRef = useRef<Set<string>>(DISASSEMBLED_POKEMON_SET);
