@@ -55,7 +55,7 @@ const createInitialState = (mode: 'daily' | 'practice' = 'daily', selectedGens: 
         targetJamo: [],
         guesses: [],
         currentGuess: [],
-        gameStatus: 'lost', // 혹은 'playing' 유지
+        gameStatus: 'playing', // 혹은 'playing' 유지
         gameDate: formatDate(new Date()),
         maxAttempts: MAX_ATTEMPTS,
         letterStatuses: {},
