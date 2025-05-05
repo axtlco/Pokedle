@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { HelpCircle, BarChart2, ChevronDown, Home, Infinity } from 'lucide-react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import HelpModal from './modals/HelpModal';
 import StatsModal from './modals/StatsModal';
+import { useGame } from '../contexts/GameContext';
 
 const Header: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
@@ -11,6 +12,14 @@ const Header: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { selectedGens, setSelectedGens } = useGame(); //context에서 받아오기
+  const [showGenSelect, setShowGenSelect] = useState(false); // 세대 토글 열기 -> base는 닫기 상태
+
+  useEffect(() => {
+    if (location.pathname === '/practice') {
+      localStorage.setItem('selectedGens', JSON.stringify(selectedGens));
+    }
+  }, [selectedGens, location.pathname]);
 
   // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -26,7 +35,7 @@ const Header: React.FC = () => {
   return (
     <header className="py-2 border-b border-gray-200 dark:border-gray-700">
       <div className="flex justify-between items-center">
-        {/* 왼쪽: 도움말 버튼 */}
+
         <button
           onClick={() => setShowHelp(true)}
           className="p-2 text-gray-600 dark:text-gray-300 hover:text-pokemon-red dark:hover:text-pokemon-red"
@@ -35,13 +44,11 @@ const Header: React.FC = () => {
           <HelpCircle size={24} />
         </button>
 
-        {/* 가운데: 제목 */}
         <h1 className="text-xl md:text-2xl font-bold text-black dark:text-gray-100 flex items-center">
           <img src="/pokeball.svg" alt="Pokeball" className="w-8 h-8 mr-2" />
           포켓들 Pokedle
         </h1>
 
-        {/* 오른쪽: 드롭다운 */}
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen(prev => !prev)}
@@ -51,28 +58,83 @@ const Header: React.FC = () => {
           </button>
 
           {dropdownOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 shadow-lg rounded-md z-50">
+            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-lg rounded-md z-50">
+              {/* 통계 보기 */}
               <button
-                  onClick={() => {
-                    setShowStats(true);
-                    setDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
-                >
-                  <BarChart2 size={18} />
-                  <span>통계 보기</span>
-              </button>
-              {location.pathname === '/practice' ? (
-                <button
                 onClick={() => {
-                  navigate('/');
+                  setShowStats(true);
                   setDropdownOpen(false);
                 }}
                 className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
               >
-                <Home size={18} />
-                <span>홈으로</span>
+                <BarChart2 size={18} />
+                <span>통계 보기</span>
               </button>
+
+              {/* 연습 모드일 경우에만 홈/세대 선택 */}
+              {location.pathname === '/practice' ? (
+                <>
+                  {/* 홈으로 */}
+                  <button
+                    onClick={() => {
+                      navigate('/');
+                      setDropdownOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
+                  >
+                    <Home size={18} />
+                    <span>홈으로</span>
+                  </button>
+
+                  {/* 세대 선택 토글 버튼 */}
+                  <button
+                    onClick={() => setShowGenSelect(prev => !prev)}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
+                  >
+                    <ChevronDown size={18} />
+                    <span>세대 선택</span>
+                  </button>
+
+                  {/* 세대 토글 UI */}
+                  {showGenSelect && (
+                    <div className="space-y-1 px-3 pb-3 pt-2">
+                    {Array.from({ length: 9 }, (_, i) => i + 1).map(gen => {
+                      const isSelected = selectedGens.includes(gen);
+                      return (
+                        <label
+                          key={gen}
+                          className="flex items-center justify-between gap-4 cursor-pointer py-1"
+                        >
+                          <span className="text-sm text-gray-800 dark:text-white">{gen}세대</span>
+                  
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => {
+                              setSelectedGens(prev =>
+                                prev.includes(gen) ? prev.filter(g => g !== gen) : [...prev, gen]
+                              );
+                            }}
+                            className="sr-only"
+                          />
+                  
+                          <div
+                            className={`w-10 h-6 flex items-center rounded-full px-1 transition duration-300 ease-in-out ${
+                              isSelected ? 'bg-blue-500' : 'bg-gray-300'
+                            }`}
+                          >
+                            <div
+                              className={`w-4 h-4 bg-white rounded-full shadow transform transition duration-300 ${
+                                isSelected ? 'translate-x-4' : 'translate-x-0'
+                              }`}
+                            />
+                          </div>
+                        </label>
+                      );
+                    })}
+                  </div> 
+                  )}
+                </>
               ) : (
                 <button
                   onClick={() => {
@@ -84,7 +146,6 @@ const Header: React.FC = () => {
                   <Infinity size={18} />
                   <span>연습 모드</span>
                 </button>
-
               )}
             </div>
           )}

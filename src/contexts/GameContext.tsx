@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { getPokemonOfTheDay, getRandomPokemon, DISASSEMBLED_POKEMON_SET, getPokemonByIndex, getRandomPokemonIndex } from '../utils/pokemon';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { getPokemonOfTheDay, getRandomPokemon, DISASSEMBLED_POKEMON_SET, getDisassembledSetForGens, getPokemonByIndex, getRandomPokemonIndex } from '../utils/pokemon';
 import { formatDate } from '../utils/date';
 import { decomposeHangul} from '../utils/korean';
-import { decodeTarget } from '../utils/encodings'
+import { decodeTarget, decodeIndex } from '../utils/encodings'
 
 export type CellStatus = 'empty' | 'filled' | 'correct' | 'present' | 'absent';
 
@@ -35,18 +35,40 @@ interface GameContextType {
   resetGame: () => void;
   isGameOver: boolean;
   mode : 'daily' | 'practice'; 
+  selectedGens: number[]; 
+  setSelectedGens: React.Dispatch<React.SetStateAction<number[]>>; 
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
 const MAX_ATTEMPTS = 6;
 
-const createInitialState = (mode: 'daily' | 'practice' = 'daily'): GameState => {
+const createInitialState = (mode: 'daily' | 'practice' = 'daily', selectedGens: number[] = []): GameState => {
   let targetPokemon: string; 
   if (mode === 'practice') {
     const queryTarget = new URLSearchParams(window.location.search).get('target');
-    targetPokemon = queryTarget ? decodeTarget(queryTarget) : getRandomPokemon();
-  } else {
+    const gensToUse = selectedGens.length ? selectedGens : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    if (queryTarget) {
+      const index = decodeIndex(queryTarget);
+      targetPokemon = getPokemonByIndex(index);
+    } else {
+      targetPokemon = getRandomPokemon(gensToUse);
+    }
+
+    // naive한 base 64 기반 인코딩 링크 디코딩해서 불러오기
+    /*
+    const queryTarget = new URLSearchParams(window.location.search).get('target');
+    const storedGens = JSON.parse(localStorage.getItem('selectedGens') || '[]');
+    const fallbackGens = [1,2,3,4,5,6,7,8,9]; // default to all gens
+    const gensToUse = storedGens.length ? storedGens : fallbackGens;
+    
+    targetPokemon = queryTarget
+      ? decodeTarget(queryTarget)
+      : getRandomPokemon(gensToUse);
+    */
+
+  }
+  else {
     targetPokemon = getPokemonOfTheDay();
   }
 
@@ -73,6 +95,19 @@ const createInitialState = (mode: 'daily' | 'practice' = 'daily'): GameState => 
 
 export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' | 'practice' }> = ({ children, mode = 'daily' }) => {
   const STORAGE_KEY = mode === 'practice' ? 'practiceGameState' : 'gameState';
+
+  /*
+  const [selectedGens, setSelectedGens] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9]); 
+  */
+
+  const [selectedGens, setSelectedGens] = useState<number[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('selectedGens') || '[]');
+    } catch {
+      return [];
+    }
+  });
+
   const [gameState, setGameState] = useState<GameState>(() => {
     if(mode === 'practice') {
       return createInitialState('practice'); 
@@ -95,6 +130,18 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     
     return createInitialState();
   });
+
+  const validDisassembledSetRef = useRef<Set<string>>(DISASSEMBLED_POKEMON_SET);
+
+  // 연습 모드일 경우, 선택된 세대 기준으로 유효 포켓몬 세트 설정
+  useEffect(() => {
+    if (mode === 'practice') {
+      validDisassembledSetRef.current = getDisassembledSetForGens(selectedGens);
+    } else {
+      validDisassembledSetRef.current = DISASSEMBLED_POKEMON_SET;
+    }
+  }, [mode, selectedGens]);
+
 
   const { targetPokemon, targetJamo, guesses, currentGuess, gameStatus, gameDate, letterStatuses } = gameState;
 
@@ -127,14 +174,55 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     });
   }, [isGameOver, targetJamoLength]);
 
+
   const submitGuess = useCallback(() => {
     if (isGameOver || currentGuess.length !== targetJamoLength) return;
 
+    const disassembledInput = currentGuess.join('');
+    // UX를 더 신경 쓴 버전
+    const isInSelectedGens = validDisassembledSetRef.current.has(disassembledInput);
+    const isInAllGens = DISASSEMBLED_POKEMON_SET.has(disassembledInput);
+
+    if (!isInSelectedGens) {
+      if (isInAllGens) {
+        alert('선택한 세대의 포켓몬이 아닙니다!');
+      } else {
+        alert('등록되지 않은 포켓몬입니다!');
+      }
+      return;
+    }
+
+    /*
+    // 세대 구분 했을 때 Set 캐싱하는 경우 v3
+    if (!validDisassembledSetRef.current.has(disassembledInput)) {
+      alert('등록되지 않은 포켓몬입니다!');
+      return;
+    }
+    */ 
+    
+    // 세대 구분 했을 때 캐싱 없어서 분해 Set 계속 만드는 경우 v2
+    /* 
+    let validSet: Set<string> = DISASSEMBLED_POKEMON_SET;
+
+    if (mode === 'practice') {
+      const gens = JSON.parse(localStorage.getItem('selectedGens') || '[]');
+      validSet = getDisassembledSetForGens(gens);
+    }
+
+    if (!validSet.has(disassembledInput)) {
+      alert('등록되지 않은 포켓몬입니다!');
+      return;
+    }
+    */ 
+
+    // 세대 별로 구분 안했을 때 v1
+    /*
     const disassembledInput = currentGuess.join('');
     if (!DISASSEMBLED_POKEMON_SET.has(disassembledInput)) {
       alert('등록되지 않은 포켓몬입니다!');
       return;
     }
+    */
 
     const evaluateGuess = (guess: string[], target: string[]): CellStatus[] => {
       const result: CellStatus[] = Array(guess.length).fill('absent');
@@ -233,7 +321,9 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
       submitGuess,
       resetGame,
       isGameOver,
-      mode
+      mode,
+      selectedGens,
+      setSelectedGens
     }}>
       {children}
     </GameContext.Provider>

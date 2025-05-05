@@ -1,7 +1,8 @@
 import React from 'react';
 import { useGame } from '../contexts/GameContext';
 import { Share2, RotateCcw } from 'lucide-react';
-import { encodeTarget } from '../utils/encodings'
+import { encodeTarget, encodeIndex } from '../utils/encodings'
+import { POKEMON_LIST } from '../utils/pokemon';
 
 const ResultMessage: React.FC = () => {
   const { gameStatus, targetPokemon, guesses, mode, resetGame } = useGame();
@@ -22,7 +23,14 @@ const handleShare = () => {
 
   // 추가: practice 모드일 경우만 공유 링크 생성
   const baseUrl = window.location.origin;
+  /*
   const encodedTarget = encodeTarget(targetPokemon);
+  const shareUrl = mode === 'practice'
+    ? `${baseUrl}/practice?target=${encodedTarget}`
+    : baseUrl;
+  */
+  const index = POKEMON_LIST.indexOf(targetPokemon);
+  const encodedTarget = encodeIndex(index);
   const shareUrl = mode === 'practice'
     ? `${baseUrl}/practice?target=${encodedTarget}`
     : baseUrl;
