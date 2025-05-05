@@ -20,6 +20,8 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
             <li>포켓몬의 이름 길이에 맞춰 추측해보세요.</li>
             <li>각 추측 후에는 글자별로 결과가 표시됩니다.</li>
             <li>글자 길이는 자음과 모음을 풀었을 때 길이입니다.</li>
+            <li>쌍자음과 쌍모음은 풀어서 적어주세요. </li>
+            <li>예시: ㄲ → ㄱㄱ, ㅒ → ㅑㅣ</li>
             <li>총 6번의 기회가 있습니다.</li>
           </ul>
         </section>
