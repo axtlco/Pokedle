@@ -20,6 +20,7 @@ interface GameState {
   gameDate: string;
   maxAttempts: number;
   letterStatuses: Record<string, CellStatus>;
+  selectedGens?: number[]; 
 }
 
 interface GameContextType {
@@ -46,6 +47,21 @@ const MAX_ATTEMPTS = 6;
 const createInitialState = (mode: 'daily' | 'practice' = 'daily', selectedGens: number[] = []): GameState => {
   let targetPokemon: string; 
   if (mode === 'practice') {
+    if (selectedGens.length === 0) {
+      alert('선택한 세대가 없습니다! 최소 한 세대를 선택해주세요.');
+      // fallback으로 임시값 반환 (게임은 못하게 막음)
+      return {
+        targetPokemon: '',
+        targetJamo: [],
+        guesses: [],
+        currentGuess: [],
+        gameStatus: 'lost', // 혹은 'playing' 유지
+        gameDate: formatDate(new Date()),
+        maxAttempts: MAX_ATTEMPTS,
+        letterStatuses: {},
+      };
+    }
+
     const queryTarget = new URLSearchParams(window.location.search).get('target');
     const gensToUse = selectedGens.length ? selectedGens : [1, 2, 3, 4, 5, 6, 7, 8, 9];
     if (queryTarget) {
@@ -100,13 +116,15 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
   const [selectedGens, setSelectedGens] = useState<number[]>([1, 2, 3, 4, 5, 6, 7, 8, 9]); 
   */
 
-  const [selectedGens, setSelectedGens] = useState<number[]>(() => {
+  const savedGens = (() => {
     try {
       return JSON.parse(localStorage.getItem('selectedGens') || '[]');
     } catch {
       return [];
     }
-  });
+  })();
+  
+  const [selectedGens, setSelectedGens] = useState<number[]>(savedGens);
 
   /*
   const [gameState, setGameState] = useState<GameState>(() => {
@@ -132,27 +150,32 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     return createInitialState();
   });
   */
- 
+
   const [gameState, setGameState] = useState<GameState>(() => {
     const savedState = localStorage.getItem(STORAGE_KEY);
-  
+    
     if (savedState) {
       try {
         const parsedState = JSON.parse(savedState);
         if (
           parsedState &&
           parsedState.targetPokemon &&
-          parsedState.targetJamo
+          parsedState.targetJamo &&
+          (
+            mode === 'daily' || 
+            JSON.stringify(parsedState.selectedGens || []) === JSON.stringify(savedGens) 
+          )
         ) {
           return parsedState;
         }
-      } catch (err) {
-        console.error('🔴 Error parsing game state:', err);
+      } 
+      catch (err) {
+        console.error('Error parsing game state:', err);
       }
     }
   
     // 저장된 게 없을 때만 초기화
-    return createInitialState(mode, selectedGens);
+    return createInitialState(mode, savedGens);
   });
 
   const validDisassembledSetRef = useRef<Set<string>>(DISASSEMBLED_POKEMON_SET);
@@ -321,7 +344,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
       guesses: newGuesses,
       currentGuess: [],
       gameStatus: newGameStatus,
-      letterStatuses: newLetterStatuses
+      letterStatuses: newLetterStatuses,
+      selectedGens
     });
   }, [currentGuess, gameState, guesses, isGameOver, letterStatuses, targetJamo, targetJamoLength, targetPokemon]);
 
@@ -329,8 +353,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     if (mode === 'practice') {
       localStorage.removeItem('randomPokemon');
     }
-    setGameState(createInitialState(mode));
-  }, [mode]);
+    setGameState(createInitialState(mode, selectedGens));
+  }, [mode, selectedGens]);
 
   return (
     <GameContext.Provider value={{
