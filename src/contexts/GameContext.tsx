@@ -67,7 +67,8 @@ const createInitialState = (mode: 'daily' | 'practice' = 'daily', selectedGens: 
     if (queryTarget) {
       const index = decodeIndex(queryTarget);
       targetPokemon = getPokemonByIndex(index);
-    } else {
+    } 
+    else {
       targetPokemon = getRandomPokemon(gensToUse);
     }
 
@@ -119,7 +120,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
   const savedGens = (() => {
     try {
       return JSON.parse(localStorage.getItem('selectedGens') || '[]');
-    } catch {
+    } 
+    catch {
       return [];
     }
   })();
@@ -157,24 +159,26 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
     if (savedState) {
       try {
         const parsedState = JSON.parse(savedState);
+        const today = formatDate(new Date());
+  
+        const isSameGen = JSON.stringify(parsedState.selectedGens || []) === JSON.stringify(savedGens);
+  
+        const isValidDaily = mode === 'daily' && parsedState.gameDate === today;
+        const isValidPractice = mode === 'practice' && isSameGen;
+  
         if (
           parsedState &&
           parsedState.targetPokemon &&
           parsedState.targetJamo &&
-          (
-            mode === 'daily' || 
-            JSON.stringify(parsedState.selectedGens || []) === JSON.stringify(savedGens) 
-          )
+          (isValidDaily || isValidPractice)
         ) {
           return parsedState;
         }
-      } 
-      catch (err) {
+      } catch (err) {
         console.error('Error parsing game state:', err);
       }
     }
   
-    // 저장된 게 없을 때만 초기화
     return createInitialState(mode, savedGens);
   });
 
@@ -184,7 +188,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode, mode?: 'daily' 
   useEffect(() => {
     if (mode === 'practice') {
       validDisassembledSetRef.current = getDisassembledSetForGens(selectedGens);
-    } else {
+    } 
+    else {
       validDisassembledSetRef.current = DISASSEMBLED_POKEMON_SET;
     }
   }, [mode, selectedGens]);
