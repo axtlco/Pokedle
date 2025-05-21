@@ -4,7 +4,9 @@ import history from 'connect-history-api-fallback';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react()
+  ],
   optimizeDeps: {
     exclude: ['lucide-react'],
   },
