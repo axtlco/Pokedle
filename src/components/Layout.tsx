@@ -2,6 +2,7 @@ import React from 'react';
 import Header from './Header';
 import { Sun, Moon } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
+import { useAuth } from '../contexts/AuthContext';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -9,7 +10,8 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { theme, toggleTheme } = useTheme();
-
+  const { loading } = useAuth();
+  if (loading) return null;
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 theme-transition">
       <div className="max-w-md mx-auto px-4 py-2">

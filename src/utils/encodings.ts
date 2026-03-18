@@ -6,7 +6,7 @@ export const decodeTarget = (encoded: string): string => {
     try {
       return decodeURIComponent(escape(atob(encoded)));
     } 
-    catch (e) {
+    catch {
       return '';
     }
 };

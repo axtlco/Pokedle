@@ -1,9 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { HelpCircle, BarChart2, ChevronDown, Home, Infinity } from 'lucide-react';
+import { HelpCircle, ChevronDown, LogIn, LogOut, UserCircle } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import HelpModal from './modals/HelpModal';
 import StatsModal from './modals/StatsModal';
 import { useGame } from '../contexts/GameContext';
+import GenToggleButton  from './dropdowns/GenToggleButton'; 
+import StatsButton from './dropdowns/StatsButton';
+import HomeButton from './dropdowns/HomeButton';
+import PracticeButton from './dropdowns/PracticeButton';
+import LeaderboardButton from './dropdowns/LeaderboardButton';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { useAuth } from '../contexts/AuthContext';
+import LoginModal from './auth/LoginModal';
+import ProfileModal from './modals/ProfileModal';
+
 
 const Header: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false);
@@ -14,12 +25,13 @@ const Header: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { selectedGens, setSelectedGens } = useGame(); //context에서 받아오기
   const [showGenSelect, setShowGenSelect] = useState(false); // 세대 토글 열기 -> base는 닫기 상태
+  const { user } = useAuth(); // 로그인 상태
+  const [showLoginModal, setShowLoginModal] = useState(false); // 로그인 모달 상태
+  const [showProfile, setShowProfile] = useState(false); // 프로필 모달 상태
 
   useEffect(() => {
-    if (location.pathname === '/practice') {
-      localStorage.setItem('selectedGens', JSON.stringify(selectedGens));
-    }
-  }, [selectedGens, location.pathname]);
+    setDropdownOpen(false);
+  }, [user]);
 
   // 바깥 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -32,19 +44,141 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  
+const renderDropdownItems = () => {
+  const commonItems = (
+    <>
+      {location.pathname === '/practice' ? (
+        <>
+          {/* 연습 모드에서는 홈 버튼 + 세대 선택 토글 */}
+          <HomeButton onClick={() => {
+            navigate('/');
+            setDropdownOpen(false);
+          }} />
+          <GenToggleButton
+            showGenSelect={showGenSelect}
+            toggleShow={() => setShowGenSelect(prev => !prev)}
+            selectedGens={selectedGens}
+            toggleGen={(gen) =>
+              setSelectedGens((prev) => {
+                if (!prev.includes(gen)) {
+                  return [...prev, gen].sort((left, right) => left - right);
+                }
+
+                if (prev.length === 1) {
+                  alert('최소 하나의 세대는 선택해야 합니다.');
+                  return prev;
+                }
+
+                return prev.filter((value) => value !== gen);
+              })
+            }
+          />
+        </>
+      ) : location.pathname === '/leaderboard' ? (
+        <>
+          {/* 리더보드에서는 홈 + 연습 모드 둘 다 보여주기 */}
+          <HomeButton onClick={() => {
+            navigate('/');
+            setDropdownOpen(false);
+          }} />
+          <PracticeButton onClick={() => {
+            navigate('/practice');
+            setDropdownOpen(false);
+          }} />
+        </>
+      ) : (
+        <>
+          {/* 데일리 모드에서는 연습 모드 버튼만 */}
+          <PracticeButton onClick={() => {
+            navigate('/practice');
+            setDropdownOpen(false);
+          }} />
+        </>
+      )}
+  
+      {/* 공통: 리더보드, 통계 보기 */}
+      <LeaderboardButton onClick={() => {
+        navigate('/leaderboard');
+        setDropdownOpen(false);
+      }} />
+  
+      <StatsButton onClick={() => {
+        setShowStats(true);
+        setDropdownOpen(false);
+      }} />
+    </>
+  );
+
+  return (
+    <>
+      {user ? (
+        <>
+          <button
+            onClick={() => {
+              setShowProfile(true);
+              setDropdownOpen(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
+          >
+            <UserCircle size={18} />
+            <span>프로필</span>
+          </button>
+          <button
+            onClick={async () => {
+              await signOut(auth);
+              setDropdownOpen(false);
+            }}
+            className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
+          >
+            <LogOut size={18} />
+            <span>로그아웃</span>
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => {
+            setShowLoginModal(true);
+            setDropdownOpen(false);
+          }}
+          className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
+        >
+          <LogIn size={18} />
+          <span>로그인</span>
+        </button>
+      )}
+      {commonItems}
+    </>
+  );
+};
+
   return (
     <header className="py-2 border-b border-gray-200 dark:border-gray-700">
       <div className="flex justify-between items-center">
 
-        <button
-          onClick={() => setShowHelp(true)}
-          className="p-2 text-gray-600 dark:text-gray-300 hover:text-pokemon-red dark:hover:text-pokemon-red"
-          aria-label="Instructions"
-        >
-          <HelpCircle size={24} />
-        </button>
+        <div className="relative flex items-center group">
+          <button
+            onClick={() => setShowHelp(true)}
+            className="p-2 flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-pokemon-red dark:hover:text-pokemon-red"
+            aria-label="Instructions"
+          >
+            <HelpCircle size={24} className="text-gray-600 dark:text-gray-300" />
+          </button>
 
-        <h1 className="text-xl md:text-2xl font-bold text-black dark:text-gray-100 flex items-center">
+          <div className="ml-1 animate-pulse text-[10px] cursor-default relative">
+            <span className="peer">{user ? '🟢' : '🟡'}</span>
+
+            {/* 툴팁 아래 방향 */}
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-max px-3 py-1 rounded-md bg-gray-800 text-white text-xs opacity-0 peer-hover:opacity-100 peer-hover:translate-y-1 transition-all duration-200 ease-in-out shadow-lg z-50 pointer-events-none">
+              {user ? '로그인됨' : '로그인 필요'}
+            </div>
+          </div>
+        </div>
+
+        <h1
+          onClick={() => navigate('/')}
+          className="text-xl md:text-2xl font-bold text-black dark:text-gray-100 flex items-center cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <img src="/pokeball.svg" alt="Pokeball" className="w-8 h-8 mr-2" />
           포켓들 Pokedle
         </h1>
@@ -59,101 +193,19 @@ const Header: React.FC = () => {
 
           {dropdownOpen && (
             <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 shadow-lg rounded-md z-50">
-              {/* 통계 보기 */}
-              <button
-                onClick={() => {
-                  setShowStats(true);
-                  setDropdownOpen(false);
-                }}
-                className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
-              >
-                <BarChart2 size={18} />
-                <span>통계 보기</span>
-              </button>
-
-              {/* 연습 모드일 경우에만 홈/세대 선택 */}
-              {location.pathname === '/practice' ? (
-                <>
-                  {/* 홈으로 */}
-                  <button
-                    onClick={() => {
-                      navigate('/');
-                      setDropdownOpen(false);
-                    }}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
-                  >
-                    <Home size={18} />
-                    <span>홈으로</span>
-                  </button>
-
-                  {/* 세대 선택 토글 버튼 */}
-                  <button
-                    onClick={() => setShowGenSelect(prev => !prev)}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
-                  >
-                    <ChevronDown size={18} />
-                    <span>세대 선택</span>
-                  </button>
-
-                  {/* 세대 토글 UI */}
-                  {showGenSelect && (
-                    <div className="space-y-1 px-3 pb-3 pt-2">
-                    {Array.from({ length: 9 }, (_, i) => i + 1).map(gen => {
-                      const isSelected = selectedGens.includes(gen);
-                      return (
-                        <label
-                          key={gen}
-                          className="flex items-center justify-between gap-4 cursor-pointer py-1"
-                        >
-                          <span className="text-sm text-gray-800 dark:text-white">{gen}세대</span>
-                  
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => {
-                              setSelectedGens(prev =>
-                                prev.includes(gen) ? prev.filter(g => g !== gen) : [...prev, gen]
-                              );
-                            }}
-                            className="sr-only"
-                          />
-                  
-                          <div
-                            className={`w-10 h-6 flex items-center rounded-full px-1 transition duration-300 ease-in-out ${
-                              isSelected ? 'bg-blue-500' : 'bg-gray-300'
-                            }`}
-                          >
-                            <div
-                              className={`w-4 h-4 bg-white rounded-full shadow transform transition duration-300 ${
-                                isSelected ? 'translate-x-4' : 'translate-x-0'
-                              }`}
-                            />
-                          </div>
-                        </label>
-                      );
-                    })}
-                  </div> 
-                  )}
-                </>
-              ) : (
-                <button
-                  onClick={() => {
-                    navigate('/practice');
-                    setDropdownOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center space-x-2 text-gray-800 dark:text-white"
-                >
-                  <Infinity size={18} />
-                  <span>연습 모드</span>
-                </button>
-              )}
+              {renderDropdownItems()}
             </div>
           )}
         </div>
+
+
       </div>
 
       {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
       {showStats && <StatsModal onClose={() => setShowStats(false)} />}
+      {showLoginModal && <LoginModal onClose={() => setShowLoginModal(false)} />}
+      {showProfile && <ProfileModal onClose={() => setShowProfile(false)} />}
+
     </header>
   );
 };
