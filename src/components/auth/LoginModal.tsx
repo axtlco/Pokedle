@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FirebaseError } from 'firebase/app';
 import {
   GoogleAuthProvider,
@@ -38,11 +38,17 @@ const getAuthErrorMessage = (
       return '이미 사용 중인 이메일입니다.';
     case 'auth/popup-closed-by-user':
       return '로그인이 취소되었습니다.';
+    case 'auth/popup-blocked':
+      return '브라우저에서 로그인 팝업이 차단되었습니다. 팝업 차단을 해제한 뒤 다시 시도해 주세요.';
+    case 'auth/operation-not-allowed':
+      return 'Firebase 콘솔에서 Google 로그인 제공자가 활성화되어 있는지 확인해 주세요.';
+    case 'auth/unauthorized-domain':
+      return '현재 배포 도메인이 Firebase 인증 허용 도메인에 등록되어 있지 않습니다.';
     case 'auth/cancelled-popup-request':
       return null;
     default:
       if (mode === 'google') {
-        return '구글 로그인 중 오류가 발생했습니다. 다시 시도해 주세요.';
+        return `구글 로그인 중 오류가 발생했습니다. (${error.code})`;
       }
 
       return mode === 'login'
@@ -100,6 +106,7 @@ const LoginModal: React.FC<Props> = ({ onClose }) => {
       await signInWithPopup(auth, provider);
       onClose();
     } catch (error) {
+      console.error('Google login failed:', error);
       setError(getAuthErrorMessage(error, 'google'));
     }
   };
