@@ -3,9 +3,10 @@ import Modal from './Modal';
 
 interface AnnouncementModalProps {
   onClose: () => void;
+  onHideToday: () => void;
 }
 
-const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ onClose }) => (
+const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ onClose, onHideToday }) => (
   <Modal title="공지" onClose={onClose}>
     <div className="space-y-6 text-gray-800 dark:text-gray-200">
       <p className="leading-relaxed break-keep">
@@ -25,6 +26,13 @@ const AnnouncementModal: React.FC<AnnouncementModalProps> = ({ onClose }) => (
         className="w-full rounded-lg bg-blue-600 px-4 py-2 font-semibold text-white hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
       >
         확인
+      </button>
+      <button
+        type="button"
+        onClick={onHideToday}
+        className="w-full rounded-lg px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+      >
+        오늘 하루 안 보기
       </button>
     </div>
   </Modal>
