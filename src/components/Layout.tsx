@@ -1,6 +1,6 @@
 import React from 'react';
 import Header from './Header';
-import { Sun, Moon } from 'lucide-react';
+import { Sun, Moon, Github } from 'lucide-react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -32,6 +32,16 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <p>@axtlco Pokedle &copy; {new Date().getFullYear()}</p>
           <br></br>
           <p>Contact: axtlz47@gmail.com</p>
+          <a
+            href="https://github.com/axtlco/Pokedle"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub에서 소스 코드 보기 (새 탭)"
+            className="mt-3 inline-flex items-center gap-1.5 rounded px-2 py-1 text-xs hover:text-gray-800 dark:hover:text-gray-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500"
+          >
+            <Github size={14} aria-hidden="true" />
+            <span>소스 코드</span>
+          </a>
         </footer>
       </div>
     </div>
