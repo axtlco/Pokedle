@@ -5,7 +5,7 @@ import ResultMessage from './ResultMessage';
 import { useGame } from '../contexts/GameContext';
 import { alpha_2_kr } from '../utils/alpha_2_kr';
 
-const Game: React.FC<{ inputDisabled?: boolean }> = ({ inputDisabled = false }) => {
+const Game: React.FC = () => {
   const {
     targetJamoLength,
     handleKeyInput,
@@ -16,8 +16,6 @@ const Game: React.FC<{ inputDisabled?: boolean }> = ({ inputDisabled = false }) 
   } = useGame();
 
   useEffect(() => {
-    if (inputDisabled) return;
-
     const listener = (event: KeyboardEvent) => {
       const active = document.activeElement;
       if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) {
@@ -47,7 +45,7 @@ const Game: React.FC<{ inputDisabled?: boolean }> = ({ inputDisabled = false }) 
     return () => {
       window.removeEventListener('keyup', listener);
     };
-  }, [handleKeyInput, submitGuess, inputDisabled]);
+  }, [handleKeyInput, submitGuess]);
 
   return (
     <div className="flex flex-col items-center space-y-6">
